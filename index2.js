@@ -1,77 +1,72 @@
-const yargs = require('yargs')
-const fs = require('fs');
-const _ = require('lodash');
+const express = require('express');
+const pug = require('pug');
 
-const notes = require('./notes2');
+var app = express();
 
-// add
-// list
-// read
-// remove
+app.set('view engine', 'pug');
+app.use(express.static(__dirname + '/public'));
 
-const titleOptions = {
-	describe: 'Title of note',
-	demand: true,
-	alias: 't'
+app.get('/', (req, res) => {
+  res.render('home2.pug', {
+    pageTitle: "FABULA “EL CABALLO VIEJO”, DE ESOPO",
+    Message1: "Un caballo viejo fue vendido para darle vueltas a la piedra de un molino.",
+    Message2: "Al verse atado a la piedra, exclamó sollozando:",
+    Message3: "¡Después de las vueltas de las carreras, he aquí a que vueltas me he reducido!",
+    Message4: "Moraleja: No presumáis de la fortaleza de la juventud.",
+    Message5: "Para muchos, la vejez es un trabajo muy penoso.",
+  });
+});
+
+app.get('/encriptado', (req, res) => {
+  res.render('home2.pug', {
+    pageTitle: convertir("FABULA “EL CABALLO VIEJO”, DE ESOPO"),
+    Message1: convertir("Un caballo viejo fue vendido para darle vueltas a la piedra de un molino."),
+    Message2: convertir("Al verse atado a la piedra, exclamó sollozando:"),
+    Message3: convertir("¡Después de las vueltas de las carreras, he aquí a que vueltas me he reducido!"),
+    Message4: convertir("Moraleja: No presumáis de la fortaleza de la juventud."),
+    Message5: convertir("Para muchos, la vejez es un trabajo muy penoso."),
+  });
+});
+
+// /bad - send back json with errorMessage
+app.get('/bad', (req, res) => {
+  res.send({
+    errorMessage: 'Unable to handle request'
+  });
+});
+
+app.listen(3000, () => {
+  console.log('Server is up on port 3000');
+  
+});
+
+function convertir(str) { 
+  var conv = '';
+  for (var i=0; i<=str.length-1; i++) {
+  	if (str[i]=='A'){
+  	    conv += '4';
+  	    continue;
+  	}
+  	if (str[i]=='E'){
+  	    conv += '3';
+  	    continue;
+  	}  	  
+  	if (str[i]=='I'){
+  	    conv += '1';
+  	    continue;
+  	}  	    
+  	if (str[i]=='O'){
+  	    conv += '0';
+  	    continue;
+  	}  	    
+  	if (str[i]=='U'){
+  	    conv += '5';
+  	    continue;
+  	}  	    
+  	else
+	    conv += str[i];  
+  }
+  return conv;
 };
 
-const bodyOptions = {
-	describe: 'Body of note',
-	demand: true,
-	alias: 'b'
-};
 
-const argv = yargs
-	.command('add','Add a new note', {
-		title: titleOptions,
-		body: bodyOptions
-	})
-	.command('list','Lists all the notes',{
-	})
-	.command('read','Read a note',{
-		title: titleOptions
-	})
-	.command('remove', 'Borra una nota', {
-      	title: titleOptions
-  	})
-	.command('removeall', 'Borra todas las notas', {
-  	})	  
-	.help()
-	.argv;
-
-//console.log(argv);
-let command = argv._[0];
-
-if (command === "add") {
-	console.log(command);
-	notes.addNote(argv.title,argv.body);
-} else if (command === "list") {
-	console.log(command);
-	let allNotes = notes.getAll();
-	console.log(`Printing ${allNotes.length} notes(s), `);
-	allNotes.forEach(note => {
-		notes.logNote(note);
-	});
-} else if (command === "read") {
-	console.log(command);
-	let test = notes.getNote(argv.title);
-	if (test){
-		notes.logNote(test);
-	}else{
-		console.log("No esta pe >:v");
-	}
-	
-} else if (command === "remove") {
-	console.log(command);
-    notes.removeNote(argv.title);
-    
-	console.log(`La nota '${argv.title}' ha sido borrada.`);
-	
-} else if (command === "removeall") {
-	console.log(command);
-	notes.removeAll();
-	console.log(`Todas las notas han sido borradas`);
-
-}else{
-	console.log("C mamut");
-}
